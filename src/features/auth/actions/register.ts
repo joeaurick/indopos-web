@@ -1,23 +1,30 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { registerUser } from "../services/auth.service";
+import { registerSchema } from "../schemas/register.schema";
 
-export async function register(
-  fullName: string,
-  email: string,
-  password: string
-) {
-  const supabase = await createClient();
+export async function registerAction(_: unknown, formData: FormData) {
+  const values = {
+    fullName: formData.get("fullName"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  };
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-      },
-    },
-  });
+  const parsed = registerSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0].message,
+    };
+  }
+
+  const { error } = await registerUser(
+    parsed.data.fullName,
+    parsed.data.email,
+    parsed.data.password
+  );
 
   if (error) {
     return {
@@ -28,5 +35,6 @@ export async function register(
 
   return {
     success: true,
+    message: "Registrasi berhasil. Silakan cek email Anda.",
   };
 }
