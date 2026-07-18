@@ -1,0 +1,69 @@
+"use client";
+
+import { useEffect } from "react";
+
+import { useCategoryStore } from "@/features/categories/store/category.store";
+
+type Props = {
+  value: string | null;
+  onChange: (
+    value: string | null
+  ) => void;
+};
+
+export function CategoryFilter({
+  value,
+  onChange,
+}: Props) {
+  const categories =
+    useCategoryStore(
+      (state) => state.categories
+    );
+
+  const fetchCategories =
+    useCategoryStore(
+      (state) => state.fetchCategories
+    );
+
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+  }, [
+    categories.length,
+    fetchCategories,
+  ]);
+
+  return (
+    <select
+      value={value ?? ""}
+      onChange={(e) =>
+        onChange(
+          e.target.value || null
+        )
+      }
+      className="
+        rounded-xl
+        border
+        border-slate-200
+        px-4
+        py-3
+        outline-none
+        focus:border-teal-500
+      "
+    >
+      <option value="">
+        Semua Kategori
+      </option>
+
+      {categories.map((category) => (
+        <option
+          key={category.id}
+          value={category.id}
+        >
+          {category.name}
+        </option>
+      ))}
+    </select>
+  );
+}
